@@ -2,19 +2,21 @@ import express from "express";
 
 const app = express();
 
+app.use(express.json());
+
 const PORT = process.env.PORT || 3000;
 
 const mockUsers = [
   { id: 1, username: "jack", displayName: "jack123!" },
   { id: 2, username: "rose", displayName: "roseRoses" },
-  { id: 1, username: "ben", displayName: "bigBen" },
-  { id: 2, username: "mack", displayName: "mackCheese" },
-  { id: 1, username: "loki", displayName: "atreus" },
-  { id: 2, username: "thor", displayName: "thorGod" },
-  { id: 1, username: "zeus", displayName: "zeus812" },
-  { id: 2, username: "hermes", displayName: "herm124" },
-  { id: 1, username: "simba", displayName: "lion913" },
-  { id: 2, username: "aladin", displayName: "MaginCrpet" },
+  { id: 3, username: "ben", displayName: "bigBen" },
+  { id: 4, username: "mack", displayName: "mackCheese" },
+  { id: 5, username: "loki", displayName: "atreus" },
+  { id: 6, username: "thor", displayName: "thorGod" },
+  { id: 7, username: "zeus", displayName: "zeus812" },
+  { id: 8, username: "hermes", displayName: "herm124" },
+  { id: 9, username: "simba", displayName: "lion913" },
+  { id: 10, username: "aladin", displayName: "MaginCrpet" },
 ];
 
 app.get("/", (request, response) => {
@@ -25,6 +27,9 @@ app.get("/api/users", (request, response) => {
   const {
     query: { filter, value },
   } = request;
+  
+  if (!filter && !value) response.status(200).send({ mockUsers });
+
   if (!filter || !value) response.status(400).send({ msg: "bad request" });
 
   try{
@@ -35,6 +40,13 @@ app.get("/api/users", (request, response) => {
   catch(e){
     response.status(400).send({ msg: "bad request" })
   }
+});
+
+app.post("/api/users", (request, response) =>{
+  const { body } = request;
+  const newUser = {id:mockUsers[mockUsers.length - 1].id + 1, ...body};
+  mockUsers.push(newUser);
+  return response.status(201).send(newUser);
 });
 
 app.get("/api/users/:id", (reqest, response) => {
@@ -49,8 +61,12 @@ app.get("/api/users/:id", (reqest, response) => {
 
 app.get("/api/products", (request, response) => {
   response.send([
-    { id: 123, name: "ckicken breast", price: "12.99" },
-    { id: 321, username: "beef", displayName: "18.76" },
+    { id: 1, name: "ckicken breast", price: "12.99" },
+    { id: 2, username: "beef", displayName: "18.76" },
+    { id: 3, name: "checken wing", price: "5.99" },
+    { id: 4, username: "oats", displayName: "8.34" },
+    { id: 5, name: "milk", price: "6.56" },
+    { id: 6, username: "eggs", displayName: "4.21" },
   ]);
 });
 
