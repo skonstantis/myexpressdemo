@@ -27,24 +27,23 @@ app.get("/api/users", (request, response) => {
   const {
     query: { filter, value },
   } = request;
-  
+
   if (!filter && !value) response.status(200).send({ mockUsers });
 
   if (!filter || !value) response.status(400).send({ msg: "bad request" });
 
-  try{
+  try {
     return response.send(
-        mockUsers.filter((user) => user[filter].includes(value))
-      );
-  }
-  catch(e){
-    response.status(400).send({ msg: "bad request" })
+      mockUsers.filter((user) => user[filter].includes(value))
+    );
+  } catch (e) {
+    response.status(400).send({ msg: "bad request" });
   }
 });
 
-app.post("/api/users", (request, response) =>{
+app.post("/api/users", (request, response) => {
   const { body } = request;
-  const newUser = {id:mockUsers[mockUsers.length - 1].id + 1, ...body};
+  const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...body };
   mockUsers.push(newUser);
   return response.status(201).send(newUser);
 });
@@ -68,6 +67,54 @@ app.get("/api/products", (request, response) => {
     { id: 5, name: "milk", price: "6.56" },
     { id: 6, username: "eggs", displayName: "4.21" },
   ]);
+});
+
+app.put("/api/users/:id", (request, response) => {
+  const {
+    body,
+    params: { id },
+  } = request;
+
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) return response.sendStatus(400);
+
+  const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+  if (findUserIndex === -1) return response.sendStatus(404);
+
+  mockUsers[findUserIndex] = { id: parsedId, ...body };
+  return response.sendStatus(200);
+});
+
+app.patch("/api/users/:id", (request, response) => {
+  const {
+    body,
+    params: { id },
+  } = request;
+
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) return response.sendStatus(400);
+
+  const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+  if (findUserIndex === -1) return response.sendStatus(404);
+
+  mockUsers[findUserIndex] = { ...mockUsers[findUserIndex], ...body };
+  return response.sendStatus(200);
+});
+
+app.delete("/api/users/:id", (request, response) => {
+  const {
+    params: { id },
+  } = request;
+
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) return response.sendStatus(400);
+
+  const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+  if (findUserIndex === -1) return response.sendStatus(404);
+
+  mockUsers.splice(findUserIndex, 1);
+
+  return response.sendStatus(200);
 });
 
 app.listen(PORT, () => {
