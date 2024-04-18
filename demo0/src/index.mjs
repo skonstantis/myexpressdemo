@@ -1,5 +1,15 @@
 import express, { request, response } from "express";
 
+import {
+  query,
+  validationResult,
+  body,
+  matchedData,
+  checkSchema,
+} from "express-validator";
+
+import { createUserValidationSchema } from "./utlis/validationSchemas.mjs";
+
 const app = express();
 
 app.use(express.json());
@@ -31,41 +41,62 @@ const mockUsers = [
   { id: 7, username: "zeus", displayName: "zeus812" },
   { id: 8, username: "hermes", displayName: "herm124" },
   { id: 9, username: "simba", displayName: "lion913" },
-  { id: 10, username: "aladin", displayName: "MaginCrpet" },
+  { id: 10, username: "aladin", displayName: "MaginCarpet" },
 ];
 
 app.get("/", (request, response) => {
   return response.status(201).send({ msg: "Hello, World!" });
 });
 
-app.get("/api/users", (request, response) => {
-  const {
-    query: { filter, value },
-  } = request;
+app.get(
+  "/api/users",
+  query("filter")
+    .isString()
+    .withMessage("Must be string")
+    .notEmpty()
+    .withMessage("Must not be empty"),
+  (request, response) => {
+    const result = validationResult(request);
+    if (!result.isEmpty())
+      return response.status(400).send({ errors: result.array() });
 
-  if (!filter && !value) return response.status(200).send({ mockUsers });
+    const {
+      query: { filter, value },
+    } = request;
 
-  if (!filter || !value)
-    return response.status(400).send({ msg: "bad request" });
+    if (!filter && !value) return response.status(200).send({ mockUsers });
 
-  try {
-    return response.send(
-      mockUsers.filter((user) => user[filter].includes(value))
-    );
-  } catch (e) {
-    return response.status(400).send({ msg: "bad request" });
+    if (!filter || !value)
+      return response.status(400).send({ msg: "bad request" });
+
+    try {
+      return response.send(
+        mockUsers.filter((user) => user[filter].includes(value))
+      );
+    } catch (e) {
+      return response.status(400).send({ msg: "bad request" });
+    }
   }
-});
+);
 
-app.post("/api/users", (request, response) => {
-  const { body } = request;
-  const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...body };
-  mockUsers.push(newUser);
-  return response.status(201).send(newUser);
-});
+app.post(
+  "/api/users",
+  checkSchema(createUserValidationSchema),
+  (request, response) => {
+    const result = validationResult(request);
+    if (!result.isEmpty())
+      return response.status(400).send({ errors: result.array() });
+
+    const data = matchedData(request);
+
+    const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...data };
+    mockUsers.push(newUser);
+    return response.status(201).send(newUser);
+  }
+);
 
 app.get("/api/users/:id", resolveIndexByUserId, (request, response) => {
-  const {findUserIndex} = request;
+  const { findUserIndex } = request;
   const findUser = mockUsers[findUserIndex];
   return response.send(findUser);
 });
