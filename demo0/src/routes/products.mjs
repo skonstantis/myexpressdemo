@@ -3,7 +3,6 @@ import { Router } from "express";
 const router = Router();
 
 router.get("/api/products", (request, response) => {
-  console.log(request.signedCookies.hello);
   if (request.signedCookies.hello && request.signedCookies.hello === "world")
     return response.send([
       { id: 1, name: "ckicken breast", price: "12.99" },
